@@ -2,7 +2,7 @@
 /*Brandeis Map - Tour .h file*/
 
 /***************************************************************************************/
-/*Part2A, MST GENERATION & PRE-ORDER TRAVERSAL                                         */
+/*Part 2A, MST GENERATION & PRE-ORDER TRAVERSAL                                        */
 /***************************************************************************************/
 
 /* Recursive data structure, can't use typedef */
@@ -81,7 +81,7 @@ void freeMst(struct MstNode *x) {
 }
 
 /***************************************************************************************/
-/*Part2A, LAZY PRIM MST ALGORITHM                                                      */
+/*Part 2A, LAZY PRIM MST ALGORITHM                                                     */
 /***************************************************************************************/
 
 void scan(DiGraph *diGraph, bool marked[], int startVertexIdx, IndexMinPq *indexMinPq) {
@@ -137,7 +137,7 @@ void lazyPrimMst() {
 	}
 
 	// Print out result
-	printf("Campus MST: legs = %d, distance = %.1f miles.\n", mstEdgesList->edgesNumb, (double) mstWeight / 5280);
+	printf("Prim MST: legs = %d, distance = %.1f miles.\n", mstEdgesList->edgesNumb, (double) mstWeight / 5280);
 	struct MstNode *mstRoot = processMst(mstEdgesList);
 
 	// Release memory
@@ -148,9 +148,112 @@ void lazyPrimMst() {
 }
 
 /***************************************************************************************/
+/*Part 2B, UNION FIND DATA STRUCTURE (WITH PATH COMPRESSION)                           */
+/***************************************************************************************/
+
+typedef struct {
+	int elemNumb; // Number of elements in this Union Find
+	int *parent; // parent[i] == parent node of i
+	int *size; // size[i] = nodes # in subtree rooted at i (not includes i)
+} UnionFind;
+
+UnionFind* createUnionFind(int maxSize) {
+	UnionFind *unionFind = malloc(sizeof(UnionFind));
+	unionFind->elemNumb = 0;
+
+	unionFind->parent = malloc(sizeof(int) * maxSize);
+	for (int i = 0; i < maxSize; i++) {
+		unionFind->parent[i] = i;
+	}
+
+	unionFind->size = malloc(sizeof(int) * maxSize);
+	for (int i = 0; i < maxSize; i++) {
+		unionFind->size[i] = 0;
+	}
+
+	return unionFind;
+}
+
+int findFromUnionFind(UnionFind *unionFind, int p) {
+	while (p != unionFind->parent[p]) {
+		unionFind->parent[p] = unionFind->parent[unionFind->parent[p]]; // Path compression by halving
+		p = unionFind->parent[p];
+	}
+
+	return p;
+}
+
+bool isConntectedInUnionFind(UnionFind *unionFind, int p, int q) {
+	return findFromUnionFind(unionFind, p) == findFromUnionFind(unionFind, q);
+}
+
+void unionInUnionFind(UnionFind *unionFind, int p, int q) {
+	int rootP = findFromUnionFind(unionFind, p);
+	int rootQ = findFromUnionFind(unionFind, q);
+
+	if (rootP == rootQ) {
+		return;
+	}
+
+	if (unionFind->size[rootP] >= unionFind->size[rootQ]) {
+		unionFind->parent[rootQ] = rootP;
+		unionFind->size[rootP] += unionFind->size[rootQ];
+	} else {
+		unionFind->parent[rootP] = rootQ;
+		unionFind->size[rootQ] += unionFind->size[rootP];
+	}
+}
+
+void freeUnionFind(UnionFind *unionFind) {
+	free(unionFind->parent);
+	free(unionFind->size);
+	free(unionFind);
+}
+
+/***************************************************************************************/
+/*Part2B, KRUSKAL MST ALGORITHM                                                        */
+/***************************************************************************************/
+
+void KruskalMST() {
+	int mstWeight = 0; // Total weight of MST
+	EdgesList *mstEdgesList = createEdgesList(); // All MST's edges
+	IndexMinPq *indexMinPq = createIndexMinPq(nE);
+	for (int e = 0; e < nE; e++) {
+		if (Estart[e] <= 4 || Eend[e] <= 4) {
+			continue;
+		}
+
+		insertToIndexMinPq(indexMinPq, Eindex[e], EdgeCost(e));
+	}
+
+	UnionFind *unionFind = createUnionFind(nV);
+	while (!isIndexMinPqEmpty(indexMinPq) && mstEdgesList->edgesNumb < nV - 5) { // nV-1-4: -4 for avoiding map corners
+		int edgeIdx = delMinFromIndexMinPq(indexMinPq);
+	    int startVertexIdx = Estart[edgeIdx];
+	    int endVertexIdx = Eend[edgeIdx];
+
+		if (!isConntectedInUnionFind(unionFind, startVertexIdx, endVertexIdx)) {
+			unionInUnionFind(unionFind, startVertexIdx, endVertexIdx);
+			addToEdgesList(mstEdgesList, edgeIdx);
+		    mstWeight += EdgeCost(edgeIdx);
+		}
+	}
+
+	// Print out result
+	printf("Kruskal MST: legs = %d, distance = %.1f miles.\n", mstEdgesList->edgesNumb, (double) mstWeight / 5280);
+
+	// Release memory
+	freeIndexMinPq(indexMinPq);
+	freeUnionFind(unionFind);
+	free(mstEdgesList);
+}
+
+/***************************************************************************************/
 /*TOUR                                                                                 */
 /***************************************************************************************/
 
 void Tour () {
-	lazyPrimMst(); // Part2A
+	lazyPrimMst(); // Part 2A
+	printf("\n\n\n");
+	KruskalMST(); // Part 2B
 }
