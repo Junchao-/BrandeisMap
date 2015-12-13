@@ -1,5 +1,8 @@
-/*NAME AND DATE GOES HERE.*/
-/*Brandeis Map - Tour .h file*/
+/*
+ * Brandeis Map - Tour .h file
+ *     NAME: Junchao Kang
+ *     DATE: 12/13/2015
+ */
 
 /***************************************************************************************/
 /*Part 2A, MST GENERATION & PRE-ORDER TRAVERSAL                                        */
@@ -88,8 +91,8 @@ void scan(DiGraph *diGraph, bool marked[], int startVertexIdx, IndexMinPq *index
 	marked[startVertexIdx] = true;
 
 	EdgesList *adjEdgesList = diGraph->adjEdgesLists[startVertexIdx];
-	for (int e = 0; e < adjEdgesList->edgesNumb; e++) {
-		Edge *edge = adjEdgesList->edges[e];
+	for (int i = 0; i < adjEdgesList->edgesNumb; i++) {
+		Edge *edge = adjEdgesList->edges[i];
 		int endVertexIdx = edge->endVertexIdx;
 		if (endVertexIdx <= 4) { // Jump over endVertexIdx which is UndefinedIndex, black hold, and map corners
 			continue;
@@ -219,11 +222,11 @@ void KruskalMST() {
 	EdgesList *mstEdgesList = createEdgesList(); // All MST's edges
 	IndexMinPq *indexMinPq = createIndexMinPq(nE);
 	for (int e = 0; e < nE; e++) {
-		if (Estart[e] <= 4 || Eend[e] <= 4) {
+		if (Estart[e] <= 4 || Eend[e] <= 4) { // Avoid map corners
 			continue;
 		}
 
-		insertToIndexMinPq(indexMinPq, Eindex[e], EdgeCost(e));
+		insertToIndexMinPq(indexMinPq, e, EdgeCost(e));
 	}
 
 	UnionFind *unionFind = createUnionFind(nV);

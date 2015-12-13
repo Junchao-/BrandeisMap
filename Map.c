@@ -1,5 +1,8 @@
-/*NAME AND DATE GOES HERE.*/
-/*Brandeis Map*/
+/*
+ * Brandeis Map
+ *     NAME: Junchao Kang
+ *     DATE: 12/13/2015
+ */
 
 /*Standard system stuff - these are the ONLY ones that may be used.*/
 #include <stdio.h>
@@ -62,13 +65,18 @@ EdgesList* createEdgesList() {
 }
 
 void addToEdgesList(EdgesList* edgesList, int edgeIdx) {
-	edgesList->edges[edgesList->edgesNumb] = createEdge(Estart[edgeIdx], Eend[edgeIdx], EdgeCost(edgeIdx), Eindex[edgeIdx]);
+	edgesList->edges[edgesList->edgesNumb] = createEdge(Estart[edgeIdx], Eend[edgeIdx], EdgeCost(edgeIdx), edgeIdx);
 	edgesList->edgesNumb++;
 }
 
 DiGraph* createDiGraph() {
 	DiGraph *diGraph = malloc(sizeof(DiGraph));
 	diGraph->adjEdgesLists = malloc(sizeof(EdgesList*) * nV);
+
+	/*
+	 * Note:  Eindex[e] = e;
+	 *        Vindex[v] = v;
+	 */
 
 	// Initialize adjacent edges lists
 	for (int v = 0; v < nV; v++) {
@@ -77,7 +85,7 @@ DiGraph* createDiGraph() {
 
 	// Initialize edges, important!
 	for (int e = 0; e < nE; e++) {
-		addToEdgesList(diGraph->adjEdgesLists[Estart[e]], Eindex[e]);
+		addToEdgesList(diGraph->adjEdgesLists[Estart[e]], e);
 	}
 
 	return diGraph;
@@ -222,9 +230,8 @@ void Dijkstra(int DijkstraFlag) {
 
 	// Initialization
 	for (int v = 0; v < nV; v++) {
-		int vertexIdx = Vindex[v];
-		distancesToBegin[vertexIdx] = InfiniteCost;
-		prevVertices[vertexIdx] = UndefinedIndex;
+		distancesToBegin[v] = InfiniteCost;
+		prevVertices[v] = UndefinedIndex;
 	}
 	distancesToBegin[Begin] = 0;
 
