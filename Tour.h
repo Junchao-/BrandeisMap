@@ -5,27 +5,10 @@
 /*Part2A, MST GENERATION & PRE-ORDER TRAVERSAL                                         */
 /***************************************************************************************/
 
-typedef struct {
-	int mstEdgesNumb; // number of edges in the MST
-	Edge **mstEdges; // edges in the MST
-} MstEdges;
-
-MstEdges* createMstEdges() {
-	MstEdges *mstEdges = malloc(sizeof(MstEdges));
-	mstEdges->mstEdgesNumb = 0;
-	mstEdges->mstEdges = malloc(sizeof(Edge*) * nE);
-	return mstEdges;
-}
-
-void addToMstEdges(MstEdges* mstEdges, int edgeIdx) {
-	mstEdges->mstEdges[mstEdges->mstEdgesNumb] = createEdge(Estart[edgeIdx], Eend[edgeIdx], EdgeCost(edgeIdx), Eindex[edgeIdx]);
-	mstEdges->mstEdgesNumb++;
-}
-
 /* Recursive data structure, can't use typedef */
 struct MstNode {
 	int vertexIdx;
-	int childrenNumb; // current node's children number
+	int childrenNumb; // Number of current node's children nodes
 	struct MstNode **children;
 };
 
@@ -54,13 +37,13 @@ struct MstNode* findParentMstNode(struct MstNode* x, int parentVertexIdx) {
 }
 
 void preorderTraverseMst(struct MstNode *currentMstNode, struct MstNode *parentMstNode, DiGraph *diGraph) {
-	PrintLeg(findEdgeIdx(diGraph, parentMstNode->vertexIdx, currentMstNode->vertexIdx));
+	PrintLeg(findEdgeIdx(diGraph, parentMstNode->vertexIdx, currentMstNode->vertexIdx)); // Pre-order print
 
 	for (int i = 0; i < currentMstNode->childrenNumb; i++) {
 		preorderTraverseMst(currentMstNode->children[i], currentMstNode, diGraph);
 	}
 
-	PrintLeg(findEdgeIdx(diGraph, currentMstNode->vertexIdx, parentMstNode->vertexIdx));
+	PrintLeg(findEdgeIdx(diGraph, currentMstNode->vertexIdx, parentMstNode->vertexIdx)); // Upon returning, preorder visits the edge in the opposite direction
 }
 
 void addNodeToMst(struct MstNode *root, int parentVertexIdx, int vertexIdx) {
@@ -70,12 +53,11 @@ void addNodeToMst(struct MstNode *root, int parentVertexIdx, int vertexIdx) {
 	parentMstNode->childrenNumb++;
 }
 
-struct MstNode* processMst(MstEdges *mstEdges) {
-
+struct MstNode* processMst(EdgesList *mstEdgesList) {
 	// Build up Mst
 	struct MstNode *root = createMstNode(Begin);
-	for (int i = 0; i < mstEdges->mstEdgesNumb; i++) {
-		Edge *edge = mstEdges->mstEdges[i];
+	for (int e = 0; e < mstEdgesList->edgesNumb; e++) {
+		Edge *edge = mstEdgesList->edges[e];
 		addNodeToMst(root, edge->startVertexIdx, edge->endVertexIdx);
 	}
 
@@ -88,7 +70,7 @@ struct MstNode* processMst(MstEdges *mstEdges) {
 	return root;
 }
 
-/* Free mst rooted on node x */
+/* Free (sub-)MST rooted on node x */
 void freeMst(struct MstNode *x) {
 	for (int i = 0; i < x->childrenNumb; i++) {
 		freeMst(x->children[i]);
@@ -121,7 +103,7 @@ void scan(DiGraph *diGraph, bool marked[], int startVertexIdx, IndexMinPq *index
 
 void lazyPrimMst() {
 	int mstWeight = 0; // total weight of MST
-	MstEdges *mstEdges = createMstEdges();
+	EdgesList *mstEdgesList = createEdgesList(); // all MST's edges
 	IndexMinPq *indexMinPq = createIndexMinPq(nE); // edges that could be added into MST
 
 	bool marked[nV]; // marked[vertexIdx] == true, if vertex is on MST
@@ -143,7 +125,7 @@ void lazyPrimMst() {
 			continue;
 		}
 
-		addToMstEdges(mstEdges, edgeIdx);
+		addToEdgesList(mstEdgesList, edgeIdx);
 		mstWeight += EdgeCost(edgeIdx);
 		if (!marked[startVertexIdx]) {
 			scan(diGraph, marked, startVertexIdx, indexMinPq);
@@ -155,14 +137,14 @@ void lazyPrimMst() {
 	}
 
 	// Print out result
-	printf("Campus MST: legs = %d, distance = %.1f miles.\n", mstEdges->mstEdgesNumb, (double) mstWeight / 5280);
-	struct MstNode *mstRoot = processMst(mstEdges);
+	printf("Campus MST: legs = %d, distance = %.1f miles.\n", mstEdgesList->edgesNumb, (double) mstWeight / 5280);
+	struct MstNode *mstRoot = processMst(mstEdgesList);
 
 	// Release memory
 	freeIndexMinPq(indexMinPq);
 	freeDiGraph(diGraph);
 	freeMst(mstRoot);
-	free(mstEdges);
+	free(mstEdgesList);
 }
 
 /***************************************************************************************/

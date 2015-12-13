@@ -54,28 +54,30 @@ Edge* createEdge(int startVertexIdx, int endVertexIdx, int edgeWeight, int edgeI
 	return edge;
 }
 
-void addEdge(DiGraph *diGraph, int startVertexIdx, int endVertexIdx, int edgeWeight, int edgeIdx) {
-	EdgesList *adjEdgesList = diGraph->adjEdgesLists[startVertexIdx];
-	adjEdgesList->edges[adjEdgesList->edgesNumb] = createEdge(startVertexIdx, endVertexIdx, edgeWeight, edgeIdx);
-	adjEdgesList->edgesNumb++;
+EdgesList* createEdgesList() {
+	EdgesList *edgeList = malloc(sizeof(EdgesList*));
+	edgeList->edgesNumb = 0;
+	edgeList->edges = malloc(sizeof(Edge*) * nE);
+	return edgeList;
+}
+
+void addToEdgesList(EdgesList* edgesList, int edgeIdx) {
+	edgesList->edges[edgesList->edgesNumb] = createEdge(Estart[edgeIdx], Eend[edgeIdx], EdgeCost(edgeIdx), Eindex[edgeIdx]);
+	edgesList->edgesNumb++;
 }
 
 DiGraph* createDiGraph() {
 	DiGraph *diGraph = malloc(sizeof(DiGraph));
 	diGraph->adjEdgesLists = malloc(sizeof(EdgesList*) * nV);
 
-	// Initialize edges list
+	// Initialize adjacent edges lists
 	for (int v = 0; v < nV; v++) {
-		EdgesList *adjEdgesList = malloc(sizeof(EdgesList*));
-		adjEdgesList->edgesNumb = 0;
-		adjEdgesList->edges = malloc(sizeof(Edge*) * nE);
-
-		diGraph->adjEdgesLists[v] = adjEdgesList;
+		diGraph->adjEdgesLists[v] = createEdgesList();
 	}
 
-	// Initialize edges
+	// Initialize edges, important!
 	for (int e = 0; e < nE; e++) {
-		addEdge(diGraph, Estart[e], Eend[e], EdgeCost(e), Eindex[e]);
+		addToEdgesList(diGraph->adjEdgesLists[Estart[e]], Eindex[e]);
 	}
 
 	return diGraph;
@@ -116,7 +118,7 @@ typedef struct {
 	int size; // Number of elements on PQ
 	int *minPq; // Binary heap using 1-based indexing
 	int *qp; // Inverse of minPq: qp[minPq[i]] = minPq[qp[i]] = i
-	int *weights; // weights[i] == i's weight
+	int *weights; // weights[i] == i's weight in IndexMinPq
 } IndexMinPq;
 
 IndexMinPq* createIndexMinPq(int maxSize) {
@@ -187,9 +189,9 @@ void insertToIndexMinPq(IndexMinPq *indexMinPq, int i, int weight) {
 	swimInIndexMinPq(indexMinPq, indexMinPq->size);
 }
 
-void decreaseDistanceToBeginInIndexMinPq(IndexMinPq *indexMinPq, int i, int weight) {
-	// Invariant: input newDistanceToBegin < original indexMinPq->distancesToBegin[vertexIdx], must hold
-	indexMinPq->weights[i] = weight;
+void decreaseDistanceToBeginInIndexMinPq(IndexMinPq *indexMinPq, int i, int newWeight) {
+	// Invariant: input newWeight < original indexMinPq->weights[i], must hold
+	indexMinPq->weights[i] = newWeight;
 	swimInIndexMinPq(indexMinPq, indexMinPq->qp[i]);
 }
 
@@ -198,7 +200,6 @@ int delMinFromIndexMinPq(IndexMinPq *indexMinPq) {
 	exchInIndexMinPq(indexMinPq, 1, indexMinPq->size);
 	indexMinPq->size--;
 	sinkInIndexMinPq(indexMinPq, 1);
-
 	indexMinPq->qp[min] = UndefinedIndex;
 	return min;
 }
