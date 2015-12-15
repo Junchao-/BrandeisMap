@@ -8,27 +8,27 @@
 /*Part 2A, MST GENERATION & PRE-ORDER TRAVERSAL                                        */
 /***************************************************************************************/
 
-/* Recursive data structure, can't use typedef */
-struct MstNode {
+/* Recursive data structure, must both define typedef and struct */
+typedef struct MstNode {
 	int vertexIdx;
 	int childrenNumb; // Number of current node's children nodes
 	struct MstNode **children;
-};
+} MstNode;
 
-struct MstNode* createMstNode(int vertexIdx) {
-	struct MstNode *mstNode = malloc(sizeof(struct MstNode));
+MstNode* createMstNode(int vertexIdx) {
+	MstNode *mstNode = malloc(sizeof(MstNode));
 	mstNode->vertexIdx = vertexIdx;
 	mstNode->childrenNumb = 0;
-	mstNode->children = malloc(sizeof(struct MstNode*) * nV);
+	mstNode->children = malloc(sizeof(MstNode*) * nV);
 	return mstNode;
 }
 
-struct MstNode* findParentMstNode(struct MstNode* x, int parentVertexIdx) {
+MstNode* findParentMstNode(MstNode* x, int parentVertexIdx) {
 	if (x->vertexIdx == parentVertexIdx) {
 		return x;
 	}
 
-	struct MstNode* rst = NULL;
+	MstNode* rst = NULL;
 	for (int i = 0; i < x->childrenNumb; i++) {
 		rst = findParentMstNode(x->children[i], parentVertexIdx);
 		if (rst != NULL) {
@@ -39,7 +39,7 @@ struct MstNode* findParentMstNode(struct MstNode* x, int parentVertexIdx) {
 	return NULL;
 }
 
-void preorderTraverseMst(struct MstNode *currentMstNode, struct MstNode *parentMstNode, DiGraph *diGraph) {
+void preorderTraverseMst(MstNode *currentMstNode, MstNode *parentMstNode, DiGraph *diGraph) {
 	PrintLeg(findEdgeIdx(diGraph, parentMstNode->vertexIdx, currentMstNode->vertexIdx)); // Pre-order print
 
 	for (int i = 0; i < currentMstNode->childrenNumb; i++) {
@@ -49,16 +49,16 @@ void preorderTraverseMst(struct MstNode *currentMstNode, struct MstNode *parentM
 	PrintLeg(findEdgeIdx(diGraph, currentMstNode->vertexIdx, parentMstNode->vertexIdx)); // Upon returning, preorder visits the edge in the opposite direction
 }
 
-void addNodeToMst(struct MstNode *root, int parentVertexIdx, int vertexIdx) {
-	struct MstNode *targetMstNode = createMstNode(vertexIdx);
-	struct MstNode *parentMstNode = findParentMstNode(root, parentVertexIdx);
+void addNodeToMst(MstNode *root, int parentVertexIdx, int vertexIdx) {
+	MstNode *targetMstNode = createMstNode(vertexIdx);
+	MstNode *parentMstNode = findParentMstNode(root, parentVertexIdx);
 	parentMstNode->children[parentMstNode->childrenNumb] = targetMstNode;
 	parentMstNode->childrenNumb++;
 }
 
-struct MstNode* processMst(EdgesList *mstEdgesList) {
+MstNode* processMst(EdgesList *mstEdgesList) {
 	// Build up Mst
-	struct MstNode *root = createMstNode(Begin);
+	MstNode *root = createMstNode(Begin);
 	for (int e = 0; e < mstEdgesList->edgesNumb; e++) {
 		Edge *edge = mstEdgesList->edges[e];
 		addNodeToMst(root, edge->startVertexIdx, edge->endVertexIdx);
@@ -74,7 +74,7 @@ struct MstNode* processMst(EdgesList *mstEdgesList) {
 }
 
 /* Free (sub-)MST rooted on node x */
-void freeMst(struct MstNode *x) {
+void freeMst(MstNode *x) {
 	for (int i = 0; i < x->childrenNumb; i++) {
 		freeMst(x->children[i]);
 	}
@@ -141,7 +141,7 @@ void lazyPrimMst() {
 
 	// Print out result
 	printf("Prim MST: legs = %d, distance = %.1f miles.\n", mstEdgesList->edgesNumb, (double) mstWeight / 5280);
-	struct MstNode *mstRoot = processMst(mstEdgesList);
+	MstNode *mstRoot = processMst(mstEdgesList);
 
 	// Release memory
 	freeIndexMinPq(indexMinPq);
@@ -256,7 +256,7 @@ void KruskalMST() {
 /***************************************************************************************/
 
 void Tour () {
-	lazyPrimMst(); // Part 2A
+//	lazyPrimMst(); // Part 2A
 	printf("\n\n\n");
 	KruskalMST(); // Part 2B
 }

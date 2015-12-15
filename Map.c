@@ -265,7 +265,7 @@ void Dijkstra(int DijkstraFlag) {
 	}
 
 	// Print out path
-	int pathLength = 0;
+	int pathLength = 0; // number of edges in the path
 	int reversedPath[nE]; // edge indices of path from Begin to Finish, in reversed order
 	int currentVertexIdx = Finish;
 	while (currentVertexIdx != Begin) {

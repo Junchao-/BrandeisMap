@@ -1,6 +1,6 @@
 MapFile   = 'BrandeisMapLabeled.jpg';
 RouteFile = 'Route.txt';
-
+ 
 %Display the map:
 Map = imread(MapFile);
 imshow(Map,'Border','tight');
