@@ -256,7 +256,7 @@ void KruskalMST() {
 /***************************************************************************************/
 
 void Tour () {
-//	lazyPrimMst(); // Part 2A
+	lazyPrimMst(); // Part 2A
 	printf("\n\n\n");
 	KruskalMST(); // Part 2B
 }
