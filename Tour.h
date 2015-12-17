@@ -11,7 +11,7 @@
 /* Recursive data structure, must both define typedef and struct */
 typedef struct MstNode {
 	int vertexIdx;
-	int childrenNumb; // Number of current node's children nodes
+	int childrenNumb; /* Number of current node's children nodes */
 	struct MstNode **children;
 } MstNode;
 
@@ -40,13 +40,13 @@ MstNode* findParentMstNode(MstNode* x, int parentVertexIdx) {
 }
 
 void preorderTraverseMst(MstNode *currentMstNode, MstNode *parentMstNode, DiGraph *diGraph) {
-	PrintLeg(findEdgeIdx(diGraph, parentMstNode->vertexIdx, currentMstNode->vertexIdx)); // Pre-order print
+	PrintLeg(findEdgeIdx(diGraph, parentMstNode->vertexIdx, currentMstNode->vertexIdx)); /* Pre-order print */
 
 	for (int i = 0; i < currentMstNode->childrenNumb; i++) {
 		preorderTraverseMst(currentMstNode->children[i], currentMstNode, diGraph);
 	}
 
-	PrintLeg(findEdgeIdx(diGraph, currentMstNode->vertexIdx, parentMstNode->vertexIdx)); // Upon returning, preorder visits the edge in the opposite direction
+	PrintLeg(findEdgeIdx(diGraph, currentMstNode->vertexIdx, parentMstNode->vertexIdx)); /* Upon returning, preorder visits the edge in the opposite direction */
 }
 
 void addNodeToMst(MstNode *root, int parentVertexIdx, int vertexIdx) {
@@ -57,14 +57,14 @@ void addNodeToMst(MstNode *root, int parentVertexIdx, int vertexIdx) {
 }
 
 MstNode* processMst(EdgesList *mstEdgesList) {
-	// Build up Mst
+	/* Build up Mst */
 	MstNode *root = createMstNode(Begin);
 	for (int e = 0; e < mstEdgesList->edgesNumb; e++) {
 		Edge *edge = mstEdgesList->edges[e];
 		addNodeToMst(root, edge->startVertexIdx, edge->endVertexIdx);
 	}
 
-	// Pre-order traverse and print out Mst
+	/* Pre-order traverse and print out Mst */
 	DiGraph *diGraph = createDiGraph();
 	for (int i = 0; i < root->childrenNumb; i++) {
 		preorderTraverseMst(root->children[i], root, diGraph);
@@ -84,7 +84,7 @@ void freeMst(MstNode *x) {
 }
 
 /***************************************************************************************/
-/*Part 2A, LAZY PRIM MST ALGORITHM                                                     */
+/*Part 2A, PRIM MST ALGORITHM                                                          */
 /***************************************************************************************/
 
 void scan(DiGraph *diGraph, bool marked[], int startVertexIdx, IndexMinPq *indexMinPq) {
@@ -94,7 +94,7 @@ void scan(DiGraph *diGraph, bool marked[], int startVertexIdx, IndexMinPq *index
 	for (int i = 0; i < adjEdgesList->edgesNumb; i++) {
 		Edge *edge = adjEdgesList->edges[i];
 		int endVertexIdx = edge->endVertexIdx;
-		if (endVertexIdx <= 4) { // Jump over endVertexIdx which is UndefinedIndex, black hold, and map corners
+		if (endVertexIdx <= 4) { /* Jump over endVertexIdx which is UndefinedIndex, black hold, and map corners */
 			continue;
 		}
 
@@ -104,16 +104,17 @@ void scan(DiGraph *diGraph, bool marked[], int startVertexIdx, IndexMinPq *index
 	}
 }
 
-void lazyPrimMst() {
-	int mstWeight = 0; // total weight of MST
-	EdgesList *mstEdgesList = createEdgesList(); // all MST's edges
-	IndexMinPq *indexMinPq = createIndexMinPq(nE); // edges that could be added into MST
+void primMst() {
+	int mstWeight = 0; /* Total weight of MST */
+	EdgesList *mstEdgesList = createEdgesList(); /* All MST's edges */
+	IndexMinPq *indexMinPq = createIndexMinPq(nE); /* Edges that could be added into MST */
 
-	bool marked[nV]; // marked[vertexIdx] == true, if vertex is on MST
-	for (int v = 0; v <= 4; v++) { // mark black hole and map corners as visited (won't visit these vertices)
+	bool marked[nV]; /* marked[vertexIdx] == true, if vertex is on MST */
+	int v = 0;
+	for (v = 0; v <= 4; v++) { /* Mark black hole and map corners as visited (won't visit these vertices) */
 		marked[v] = true;
 	}
-	for (int v = 5; v < nV; v++) {
+	for (v = 5; v < nV; v++) {
 		marked[v] = false;
 	}
 
@@ -139,11 +140,11 @@ void lazyPrimMst() {
 		}
 	}
 
-	// Print out result
+	/* Print out result */
 	printf("Prim MST: legs = %d, distance = %.1f miles.\n", mstEdgesList->edgesNumb, (double) mstWeight / 5280);
 	MstNode *mstRoot = processMst(mstEdgesList);
 
-	// Release memory
+	/* Release memory */
 	freeIndexMinPq(indexMinPq);
 	freeDiGraph(diGraph);
 	freeMst(mstRoot);
@@ -155,9 +156,9 @@ void lazyPrimMst() {
 /***************************************************************************************/
 
 typedef struct {
-	int elemNumb; // Number of elements in this Union Find
-	int *parent; // parent[i] == parent node of i
-	int *size; // size[i] = nodes # in subtree rooted at i (not includes i)
+	int elemNumb; /* Number of elements in this Union Find */
+	int *parent; /* parent[i] == parent node of i */
+	int *size; /* size[i] = nodes # in subtree rooted at i (not includes i) */
 } UnionFind;
 
 UnionFind* createUnionFind(int maxSize) {
@@ -165,12 +166,13 @@ UnionFind* createUnionFind(int maxSize) {
 	unionFind->elemNumb = 0;
 
 	unionFind->parent = malloc(sizeof(int) * maxSize);
-	for (int i = 0; i < maxSize; i++) {
+	int i = 0;
+	for (i = 0; i < maxSize; i++) {
 		unionFind->parent[i] = i;
 	}
 
 	unionFind->size = malloc(sizeof(int) * maxSize);
-	for (int i = 0; i < maxSize; i++) {
+	for (i = 0; i < maxSize; i++) {
 		unionFind->size[i] = 0;
 	}
 
@@ -179,7 +181,7 @@ UnionFind* createUnionFind(int maxSize) {
 
 int findFromUnionFind(UnionFind *unionFind, int p) {
 	while (p != unionFind->parent[p]) {
-		unionFind->parent[p] = unionFind->parent[unionFind->parent[p]]; // Path compression by halving
+		unionFind->parent[p] = unionFind->parent[unionFind->parent[p]]; /* Path compression by halving */
 		p = unionFind->parent[p];
 	}
 
@@ -218,11 +220,11 @@ void freeUnionFind(UnionFind *unionFind) {
 /***************************************************************************************/
 
 void KruskalMST() {
-	int mstWeight = 0; // Total weight of MST
-	EdgesList *mstEdgesList = createEdgesList(); // All MST's edges
+	int mstWeight = 0; /* Total weight of MST */
+	EdgesList *mstEdgesList = createEdgesList(); /* All MST's edges */
 	IndexMinPq *indexMinPq = createIndexMinPq(nE);
 	for (int e = 0; e < nE; e++) {
-		if (Estart[e] <= 4 || Eend[e] <= 4) { // Avoid map corners
+		if (Estart[e] <= 4 || Eend[e] <= 4) { /* Avoid map corners */
 			continue;
 		}
 
@@ -230,7 +232,7 @@ void KruskalMST() {
 	}
 
 	UnionFind *unionFind = createUnionFind(nV);
-	while (!isIndexMinPqEmpty(indexMinPq) && mstEdgesList->edgesNumb < nV - 5) { // nV-1-4: -4 for avoiding map corners
+	while (!isIndexMinPqEmpty(indexMinPq) && mstEdgesList->edgesNumb < nV - 5) { /* nV-1-4: -4 for avoiding map corners */
 		int edgeIdx = delMinFromIndexMinPq(indexMinPq);
 	    int startVertexIdx = Estart[edgeIdx];
 	    int endVertexIdx = Eend[edgeIdx];
@@ -242,12 +244,14 @@ void KruskalMST() {
 		}
 	}
 
-	// Print out result
+	/* Print out result */
 	printf("Kruskal MST: legs = %d, distance = %.1f miles.\n", mstEdgesList->edgesNumb, (double) mstWeight / 5280);
+	/* MstNode *mstRoot = processMst(mstEdgesList); doesn't work! */
 
-	// Release memory
+	/* Release memory */
 	freeIndexMinPq(indexMinPq);
 	freeUnionFind(unionFind);
+	/* freeMst(mstRoot); */
 	free(mstEdgesList);
 }
 
@@ -256,7 +260,7 @@ void KruskalMST() {
 /***************************************************************************************/
 
 void Tour () {
-	lazyPrimMst(); // Part 2A
-	printf("\n\n\n");
-	KruskalMST(); // Part 2B
+	primMst(); /* Part 2A */
+	/* printf("\n\n\n"); */
+	/* KruskalMST(); */
 }

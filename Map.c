@@ -45,7 +45,7 @@ typedef struct {
 } EdgesList;
 
 typedef struct {
-	EdgesList **adjEdgesLists; // adjEdgesLists[vertexIdx] == a list of all edges that start from the "vertexIdx"
+	EdgesList **adjEdgesLists; /* adjEdgesLists[vertexIdx] == a list of all edges that start from the "vertexIdx" */
 } DiGraph;
 
 Edge* createEdge(int startVertexIdx, int endVertexIdx, int edgeWeight, int edgeIdx) {
@@ -78,12 +78,12 @@ DiGraph* createDiGraph() {
 	 *        Vindex[v] = v;
 	 */
 
-	// Initialize adjacent edges lists
+	/* Initialize adjacent edges lists */
 	for (int v = 0; v < nV; v++) {
 		diGraph->adjEdgesLists[v] = createEdgesList();
 	}
 
-	// Initialize edges, important!
+	/* Initialize edges, important! */
 	for (int e = 0; e < nE; e++) {
 		addToEdgesList(diGraph->adjEdgesLists[Estart[e]], e);
 	}
@@ -101,7 +101,7 @@ int findEdgeIdx(DiGraph *diGraph, int startVertexIdx, int endVertexIdx) {
 		}
 	}
 
-	return -1; // Search miss
+	return -1; /* Search miss */
 }
 
 void freeDiGraph(DiGraph *diGraph) {
@@ -123,19 +123,19 @@ void freeDiGraph(DiGraph *diGraph) {
 /***************************************************************************************/
 
 typedef struct {
-	int size; // Number of elements on PQ
-	int *minPq; // Binary heap using 1-based indexing
-	int *qp; // Inverse of minPq: qp[minPq[i]] = minPq[qp[i]] = i
-	int *weights; // weights[i] == i's weight in IndexMinPq
+	int size; /* Number of elements on this Index Min PQ */
+	int *minPq; /* Binary heap using 1-based indexing */
+	int *qp; /* Inverse of minPq: qp[minPq[i]] = minPq[qp[i]] = i */
+	int *weights; /* weights[i] == i's weight in IndexMinPq */
 } IndexMinPq;
 
 IndexMinPq* createIndexMinPq(int maxSize) {
 	IndexMinPq *indexMinPq = malloc(sizeof(IndexMinPq));
 	indexMinPq->size = 0;
 
-	indexMinPq->minPq = malloc(sizeof(int) * (maxSize + 1)); // Heap array use 1-based index
+	indexMinPq->minPq = malloc(sizeof(int) * (maxSize + 1)); /* Heap array use 1-based index */
 
-	indexMinPq->qp = malloc(sizeof(int) * (maxSize + 1)); // Heap array use 1-based index
+	indexMinPq->qp = malloc(sizeof(int) * (maxSize + 1)); /* Heap array use 1-based index */
 	for (int v = 0; v < nV + 1; v++) {
 		indexMinPq->qp[v] = UndefinedIndex;
 	}
@@ -189,7 +189,7 @@ void sinkInIndexMinPq(IndexMinPq *indexMinPq, int k) {
 }
 
 void insertToIndexMinPq(IndexMinPq *indexMinPq, int i, int weight) {
-	// Add the new element at the tail of the array and swim the array to its appropriate location
+	/* Add the new element at the tail of the array and swim the array to its appropriate location */
 	indexMinPq->size++;
 	indexMinPq->minPq[indexMinPq->size] = i;
 	indexMinPq->qp[i] = indexMinPq->size;
@@ -198,7 +198,7 @@ void insertToIndexMinPq(IndexMinPq *indexMinPq, int i, int weight) {
 }
 
 void decreaseDistanceToBeginInIndexMinPq(IndexMinPq *indexMinPq, int i, int newWeight) {
-	// Invariant: input newWeight < original indexMinPq->weights[i], must hold
+	/* Invariant: input newWeight < original indexMinPq->weights[i], must hold */
 	indexMinPq->weights[i] = newWeight;
 	swimInIndexMinPq(indexMinPq, indexMinPq->qp[i]);
 }
@@ -225,10 +225,10 @@ void freeIndexMinPq(IndexMinPq *indexMinPq) {
 /***************************************************************************************/
 
 void Dijkstra(int DijkstraFlag) {
-	int distancesToBegin[nV]; // distancesToBegin[vertexIdx] == vertex's shortest distance to Begin
-	int prevVertices[nV]; // prevVertex[vertexIdx] == the previous vertex of v, in path from Begin to v
+	int distancesToBegin[nV]; /* distancesToBegin[vertexIdx] == vertex's shortest distance to Begin */
+	int prevVertices[nV]; /* prevVertex[vertexIdx] == the previous vertex of v, in path from Begin to v */
 
-	// Initialization
+	/* Initialization */
 	for (int v = 0; v < nV; v++) {
 		distancesToBegin[v] = InfiniteCost;
 		prevVertices[v] = UndefinedIndex;
@@ -240,7 +240,7 @@ void Dijkstra(int DijkstraFlag) {
 
 	DiGraph *diGraph = createDiGraph();
 
-	// Relax vertices in order of distance to Begin
+	/* Relax vertices in order of distance to Begin */
 	while (!isIndexMinPqEmpty(indexMinPq)) {
 		int startVertexIdx = delMinFromIndexMinPq(indexMinPq);
 		EdgesList *adjEdgesList = diGraph->adjEdgesLists[startVertexIdx];
@@ -250,7 +250,7 @@ void Dijkstra(int DijkstraFlag) {
 			int newDistanceToBegin = distancesToBegin[startVertexIdx] + edge->edgeWeight;
 			int endVertexIdx = edge->endVertexIdx;
 
-			// Relax edge and update indexMinPq if changed
+			/* Relax edge and update indexMinPq if changed */
 			if (newDistanceToBegin < distancesToBegin[endVertexIdx]) {
 				distancesToBegin[endVertexIdx] = newDistanceToBegin;
 				prevVertices[endVertexIdx] = startVertexIdx;
@@ -264,9 +264,9 @@ void Dijkstra(int DijkstraFlag) {
 		}
 	}
 
-	// Print out path
-	int pathLength = 0; // number of edges in the path
-	int reversedPath[nE]; // edge indices of path from Begin to Finish, in reversed order
+	/* Print out path */
+	int pathLength = 0; /* Number of edges in the path */
+	int reversedPath[nE]; /* Edge indices of path from Begin to Finish, in reversed order */
 	int currentVertexIdx = Finish;
 	while (currentVertexIdx != Begin) {
 		reversedPath[pathLength] = findEdgeIdx(diGraph, prevVertices[currentVertexIdx], currentVertexIdx);
@@ -278,7 +278,7 @@ void Dijkstra(int DijkstraFlag) {
 		PrintLeg(reversedPath[i]);
 	}
 
-	// Release memory
+	/* Release memory */
 	freeDiGraph(diGraph);
 	freeIndexMinPq(indexMinPq);
 }
@@ -294,7 +294,7 @@ void Dijkstra(int DijkstraFlag) {
 int main() {
 	GetVertices();
 	GetEdges();
-// while (GetRequest()) {RouteOpen(); TourFlag ? Tour() : Dijkstra(0); RouteClose();}
+/* while (GetRequest()) {RouteOpen(); TourFlag ? Tour() : Dijkstra(0); RouteClose();} */
 	while (GetRequest()) {
 		RouteOpen();
 		TourFlag ? Tour() : Dijkstra(0);

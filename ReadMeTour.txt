@@ -6,4 +6,4 @@ Part 2B:
     This part is a little bit tricky:
         I have implement a union find data structure (with path compression);
         And implemented the Kruskal's algorithm to find MST.
-        To avoid adding extra pathes to part 2A, I didn't print out the Part 2B campus tour.
+        Though it can print out the edge number and total length of MST, unfortunately part 2B cannot print out the MST.
